@@ -2,6 +2,7 @@
 
 
 // Contient la date courante
+date_default_timezone_set("Europe/Paris");
 $current_date = date("d/m/Y");
 
 // Contient le titre de la page 
@@ -26,9 +27,9 @@ if (($handle = fopen("films.csv", "r")) !== FALSE) {
 // FONCTIONS //
 ///////////////
 // Afficher une ligne de la liste
-function show_row($row) {
-    $film = new Film($row);
-    echo "<li><a href='details.php?film".$film->id."'>".$film."</a></li>";
+function show_row($film) {
+    // $film = new Film($row);
+    echo "<tr><td><a href='details.php?film=".$film->id."'>".$film->title."</a> </td> <td>".$film->type."</td></tr>";
 }
 
 // Select des types de films
@@ -38,7 +39,7 @@ function show_select_types_film() {
     foreach ($data as $row) {
         if (!in_array($row[3], $types) && $row[3] != "Type") {
             array_push($types, $row[3]);
-            echo "<li role='type'><a role='menuitem' href='#'>".$row[3].'</a></li>';
+            echo "<li role='type'><a role='menuitem' href='index.php?type=".urlencode($row[3])."'>".$row[3].'</a></li>';
         }
     } 
 }
@@ -46,7 +47,7 @@ function show_select_types_film() {
 ///////////////
 // OBJETS    //
 ///////////////
-// Classe destinée a contenir les propriétés d'un film
+// Classe destinée a contenir les propriétés d'un film class Film {
 class Film {
     public $id;
     public $title;
@@ -75,7 +76,7 @@ class Film {
     }
 }
 
-// Classe qui permet de récuperer les informations d'un film aà partir de son ID
+// Classe qui permet de récuperer les informations d'un film à partir de son ID
 class Finder {
     private $_data;
 
@@ -90,6 +91,24 @@ class Finder {
             }
         }
         Return NULL;
+    }
+
+    public function FindByType ($type) {
+        $found = array();
+        if (!empty($type)) {
+            foreach ($this->_data as $row) {
+                if ($row[3] == $type) {
+                    $found[] = new Film($row);
+                } 
+            }
+        } else {
+            foreach ($this->_data as $row) {
+                if ($row[1] != "Title") {
+                    $found[] = new Film($row);
+                }
+            }
+        }
+        return $found;
     }
 }
 
